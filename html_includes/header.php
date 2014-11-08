@@ -6,14 +6,7 @@ DoctorsClinic
 </title>
 <style>
 
-input[type="text"] {
-    margin-left:10px;
-    padding-left:10px;
-    color:green;
-    font-size:24px;
-}
-
-input[type="password"] {
+input {
     margin-left:10px;
     padding-left:10px;
     color:green;
