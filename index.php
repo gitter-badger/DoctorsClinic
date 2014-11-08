@@ -2,6 +2,7 @@
 	include 'functions.php';
 	checkSomeoneIsLoggingIn();
 	$dataentry = checkSomeoneSubmittingForm($_REQUEST);
+	checkSomeoneDeletingSomething($_REQUEST);
 	$loggedin = checkSomeoneAlreadyLoggedIn();
 	$mode = checkMode();
 	$alert_message = false;

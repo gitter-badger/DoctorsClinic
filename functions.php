@@ -17,6 +17,30 @@
 		return "'";
 	}
 
+	function checkSomeoneDeletingSomething() {
+		if($_REQUEST['delete']) {
+			if(checkTable($_REQUEST['delete'])) {
+				include 'database_config.php';
+				$connect = mysqli_connect($database_host,$database_user,$database_password,$database_name);
+				$query = "DELETE FROM " . $_REQUEST['delete'] . " WHERE ";
+				$query = $query . getPrimaryKeyField($_REQUEST['delete']);
+				$query = $query . "=" . $_REQUEST['key'];
+				echo $query;
+				mysqli_query($connect,$query);
+				header('Location: ./?view=' . $_REQUEST['delete']);
+			}
+		}
+	}
+
+	function getPrimaryKeyField($name_table) {
+		include 'database_config.php';
+		$connect = mysqli_connect($database_host,$database_user,$database_password,$database_name);
+		$query = "SHOW KEYS FROM $name_table WHERE Key_name = 'PRIMARY'";
+		$result = mysqli_query($connect,$query);
+		$result = mysqli_fetch_assoc($result);
+		return $result['Column_name'];
+	}
+
 	function showLogin() {
 		?>
 			<form action='.' method='post'>
@@ -183,6 +207,7 @@
 				echo changeName($afields[$i]);
 				echo "</td>";
 			}
+			
 			while($line=mysqli_fetch_array($result)) {
 				echo "<tr>";
 				for($j=0;$j<count($line);$j++) {
@@ -190,6 +215,10 @@
 					echo $line[$j];
 					echo "</td>";
 				}
+				
+				echo "<td style='padding-left:10px; padding-right:10px; padding-top:10px;'>";
+				echo "<a href=\"./?delete=$name_table&key=" . $line[getPrimaryKeyField($name_table)] . "\"> Delete </a>";
+				echo "</td>";
 				echo "</tr>";
 			}
 			echo "</tr>";			
