@@ -1,4 +1,22 @@
 <?php
+
+	function printInputFormAccordingToDataType($input_type) {
+		if(strpos($input_type,"int")!== false) {
+			return " type=\"number\" ";
+		} else if(strpos($input_type, "varchar")!==false)  {
+			return " type=\"text\" maxlength=\"" . preg_replace('/\D/', '', $input_type) . "\" ";
+		} else {
+			return " type=\"" . $input_type . "\" ";
+		}
+	}
+
+	function fieldsWithQuotes($input_type) {
+		if(strpos($input_type,"int")!== false) {
+			return '';		
+		}
+		return "'";
+	}
+
 	function showLogin() {
 		?>
 			<form action='.' method='post'>
@@ -201,7 +219,7 @@
 			echo "<tr><td>";
 			echo changeName($field['Field']);
 			echo "</td><td>";
-			echo "<input type=\"text\" name=\"" . $field['Field'] . "\" />";
+			echo "<input " .  printInputFormAccordingToDataType($field['Type']) . " name=\"" . $field['Field'] . "\" />";
 			echo "</td></tr>";	
 		}
 		
@@ -235,11 +253,8 @@
 		$query_mid = "";
 		
 		for($i=0;$i<count($afields);$i++) {
-			if($afields[$i][1][0]=='v') {
-				$query_mid = $query_mid . $query_quote . $_REQUEST[$afields[$i][0]] . $query_quote;
-			} else {
-				$query_mid = $query_mid . $_REQUEST[$afields[$i][0]];
-			}
+
+		$query_mid = $query_mid . fieldsWithQuotes($afields[$i][1]) . $_REQUEST[$afields[$i][0]] . fieldsWithQuotes($afields[$i][1]);
 
 			if($i<count($afields)-1)
 				$query_mid = $query_mid . ",";							
@@ -248,6 +263,7 @@
 		$query = $query_start . $query_mid . $query_end;
 		$result = mysqli_query($connect,$query);
 		$error = mysqli_error($connect);
+		echo $query;
 		if($result) {
 			$toAlert = array(1,"Added a record to $name_table");
 			createAlertMessage($toAlert);
