@@ -1,22 +1,71 @@
 <!DOCTYPE html>
 <html>
 <head>
+   <link href="css/bootstrap.min.css" rel="stylesheet">
 <title>
 DoctorsClinic
 </title>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+
+
+
+
+<script>
+
+	var box;
+
+	mapper = {
+		mishraiiit: 'admin',
+		mishraiiit_doctor: 'doctor',
+	};
+
+	var username;
+	var xx;
+
+	$(document).ready(function() {
+		box = document.getElementById('replace');
+		$('#login').hide();
+		box.addEventListener("click", replace);
+		username = document.getElementById("login-username");
+		xx = document.getElementById("account_type");
+		setInterval(function() {
+			xx.setAttribute("value", mapper[$('#login-username').val()]);
+			if(mapper[$('#login-username').val()]) {
+				xx.setAttribute('style', "border:1px solid green;");
+			} else {
+				xx.setAttribute('style', "border:1px solid red;");
+			}
+		}, 750);
+	});
+
+	function replace() {
+		if(box.getAttribute('login')==='1') {
+			$('#information').hide();
+			$('#loginbox').show();
+			box.setAttribute('login', '0');
+			box.innerHTML = "<small>Back to </small> Information Page";
+		} else {
+			$('#information').show();
+			$('#loginbox').hide();
+			box.setAttribute('login', '1');
+			box.innerHTML = "Login to <small> doctors clinic </small>";
+		}
+	}
+
+</script>
+
+
+
+
+
 <style>
 
-input {
-    margin-left:10px;
-    padding-left:10px;
-    color:green;
-    font-size:24px;
+body {
+    overflow-x: hidden;
 }
 
-input[type="submit"] {
-    color:green;
-    font-size:20px;
-}
 
 #main_table {
 	color:white;
@@ -41,7 +90,7 @@ input[type="submit"] {
 #main_table:hover {
 	color:yellow;
 	font-size:30px;
-	background-color:#3B5998;
+	background-color:#3BAA98;
 	padding:15px;
 	padding-left:30px;
 	padding-right:30px;
@@ -75,6 +124,19 @@ input[type="submit"] {
 	border:1px solid white;
 }
 
+.panel-info>.panel-heading {
+	background-color:#3B5998;
+	color:white;
+}
+.panel-info>.panel-heading>.panel-title {
+	color:white;
+}
+
+#loginbox {
+	display:none;
+}
+
+
 </style>
 </head>
 <body>
@@ -82,7 +144,7 @@ input[type="submit"] {
 <div id='header' style="position:absolute; top:0px; left:0px; width:100%; height:60px;background-color:#3B5998;padding-left:30px;">
 
     <div style='color:white;font-size:30px;padding-top:10px;'>
-	  <a href='.' style="color:white; text-decoration: none;">  facebook | doctors clinic </a>
+	  <a href='.' style="color:white; text-decoration: none;"> doctors clinic </a>
     </div>
 
 </div>
@@ -116,5 +178,4 @@ input[type="submit"] {
 <?php
 	}
 ?>
-
 <br><br><br><br>

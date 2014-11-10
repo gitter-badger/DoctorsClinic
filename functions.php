@@ -22,11 +22,17 @@
 			if(checkTable($_REQUEST['delete'])) {
 				include 'database_config.php';
 				$connect = mysqli_connect($database_host,$database_user,$database_password,$database_name);
+				$quote = '';
+				if(getPrimaryKeyField($_REQUEST['delete'])=='username') {
+					$quote = "'";
+				}
 				$query = "DELETE FROM " . $_REQUEST['delete'] . " WHERE ";
 				$query = $query . getPrimaryKeyField($_REQUEST['delete']);
-				$query = $query . "=" . $_REQUEST['key'];
-				echo $query;
+				$query = $query . "=" . $quote . $_REQUEST['key'] . $quote;
+
 				mysqli_query($connect,$query);
+				$toAlert = array(1,"Deleted one record.");
+				createAlertMessage($toAlert);
 				header('Location: ./?view=' . $_REQUEST['delete']);
 			}
 		}
@@ -42,6 +48,7 @@
 	}
 
 	function showLogin() {
+		/*
 		?>
 			<form action='.' method='post'>
 			<br><br><br><br>
@@ -68,6 +75,93 @@
 			</center>
 			</form>
 		<?php
+		*/
+		?>
+   <div class='container'>
+        <div id="loginbox" style="margin-top:50px;" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">                    
+            <div class="panel panel-info" >
+                    <div class="panel-heading">
+                        <div class="panel-title">Sign In</div>
+
+                    </div>     
+
+                    <div style="padding-top:30px" class="panel-body" >
+
+                        <div style="display:none" id="login-alert" class="alert alert-danger col-sm-12"></div>
+                            
+                        <form id="loginform" class="form-horizontal" role="form" action='./' method='post'>
+                                    
+                            <div style="margin-bottom: 25px" class="input-group">
+                                        <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                                        <input id="login-username" type="text" class="form-control" name="username" value="" placeholder="username or email">                                        
+                                    </div>
+                                
+                            <div style="margin-bottom: 25px" class="input-group">
+                                        <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+                                        <input id="login-password" type="password" class="form-control" name="password" placeholder="password">
+                                    </div>
+
+                            <div style="margin-bottom: 15px" class="input-group">
+                                        <span class="input-group-addon"> <small> Account Type </small> </span>
+                                        <input id="account_type" type="text" class="form-control"  value="admin" disabled="true">
+                            </div>
+                                    
+
+                                
+                            <div class="input-group">
+                                      <div class="checkbox">
+                                        <label>
+                                          <input id="login-remember" type="checkbox" name="remember" value="1"> Remember me
+                                        </label>
+                                      </div>
+                                    </div>
+
+
+                                <div style="margin-top:10px" class="form-group">
+                                    <!-- Button -->
+
+                                    <div class="col-sm-12 controls">
+                                      <input type='submit' class="btn btn-success" value='Login' /> 
+                                    </div>
+                                </div>
+
+
+  
+                            </form>     
+
+
+
+                        </div>                     
+                    </div>
+		
+		</div>
+	</div>
+
+
+		<div class='row' id='information'><br><br><br>
+			<div class='col-sm-1'> </div>
+			<div class='col-sm-3'>  <img src='http://doctorsclinichouston.com/wp-content/themes/silent-blue/images/Photos/about-us.jpg'> </img> </div>
+			<div class='col-sm-5'>
+			
+			Doctor's clinic is a health care facitily that is primarily devoted to the care of 
+patients. It is privately operated and managed. It typically covers the primary health
+needs of population in nearby locations of Vaishali Nagar, Jaipur. In contrast, to 
+larger hospitals which offer specialised treatments to a mass of people, Doctor's 
+clinic serves the need for a smaller number of people and admits in patients for 
+over-night stay. The clinic is operated under supervision of two docors 
+namely, Dr. A.K. Saxena (MD) and Dr. Alok Mittal (MBBS).
+			</div>
+			<div class='col-sm-3'>
+			</div>
+		</div>
+		
+	</div>
+
+	<button id="replace" style="position:absolute;top:15px;right:300px;" class="btn btn-success" login="1">
+		Login <small> to doctors clinic </small>
+	</button>
+
+		<?php
 	}
 
 	function showLogoutButton() {
@@ -86,8 +180,8 @@
 		return  unserialize($_COOKIE['doctorsclinic-alert']);
 	}
 	
-	function createCookie() {
-		setcookie("doctorsclinic-login", "admin_username", time()+86400, "/");
+	function createCookie($param) {
+		setcookie("doctorsclinic-login", serialize($param), time()+86400, "/");
 	}
 
 	function clearCookie() {
@@ -107,13 +201,20 @@
 	}
 
 	function checkSomeoneIsLoggingIn() {
-		if($_POST['admin_username']=='username' && $_POST['admin_password']=='password') {
-			createAlertMessage(array(1, "Welcome $_POST[admin_username]"));
-			createCookie();
-			refresh();
-		} else if($_POST['admin_username']) {
-			createAlertMessage(array(0, "Invalid username or password."));
-			refresh();
+		if($_POST['username']) {
+			include 'database_config.php';
+			$connect = mysqli_connect($database_host,$database_user,$database_password,$database_name);
+			$query = "SELECT * FROM login_info WHERE username='$_POST[username]' AND password='$_POST[password]';";
+			$result = mysqli_query($connect, $query);
+			$result = mysqli_fetch_assoc($result);
+			if($result) {
+				createCookie(array($result['username'],$result['account_type'], $result['e_id']));
+				createAlertMessage(array(1, "Welcome $_POST[username]"));
+				refresh();
+			} else {
+				createAlertMessage(array(0, "Invalid username/password"));
+				refresh();
+			}
 		}
 	}
 
@@ -141,18 +242,18 @@
 			</center>
 		<?php
 				
-		echo "<center><table>";
+		echo "<center><table class='table-bordered'>";
 		while($line = mysqli_fetch_array($tables)) {
 			?>
 				<tr> 
 					<td id='main_table'>
-						<?php echo changeName($line[0]); ?>
+						<a href="./?view=<?php echo $line[0]; ?>" style='color:white;text-decoration:none;'> <?php echo changeName($line[0]); ?> </a>
 					</td>
 					<td id='main_table_side'>
 						<a href="./?view=<?php echo $line[0]; ?>" style='color:white;'> View </a>
 					</td>
 					<td id='main_table_side'>
-						<a href="./?edit=<?php echo $line[0]; ?>" style='color:white;'> Edit </a>
+						<a href="./?edit=<?php echo $line[0]; ?>" style='color:white;'> Add new record </a>
 					</td>
 				</tr>
 			<?php
@@ -200,17 +301,17 @@
 		//	print_r($afields);
 			$query = "SELECT * from $name_table";
 			$result = mysqli_query($connect, $query);
-			echo "<center> <table>";
+			echo "<center> <div class='row'> <div class='col-sm-2'> </div> <div class=\"col-sm-8 table-responsive\"> <table class=\"table table-striped table-bordered\" >";
 			echo "<tr>";
 			for($i=0;$i<count($afields);$i++) {
-				echo "<td style='padding:10px;color:green;font-size:22px;'>";
+				echo "<th style='padding:10px;color:green;font-size:22px;'>";
 				echo changeName($afields[$i]);
-				echo "</td>";
+				echo "</th>";
 			}
 			
 			while($line=mysqli_fetch_array($result)) {
 				echo "<tr>";
-				for($j=0;$j<count($line);$j++) {
+				for($j=0;$j<count($line)/2;$j++) {
 					echo "<td style='padding-left:10px; padding-right:10px; padding-top:10px;'>";
 					echo $line[$j];
 					echo "</td>";
@@ -218,11 +319,18 @@
 				
 				echo "<td style='padding-left:10px; padding-right:10px; padding-top:10px;'>";
 				echo "<a href=\"./?delete=$name_table&key=" . $line[getPrimaryKeyField($name_table)] . "\"> Delete </a>";
+				echo "</td> <td style='padding-left:10px; padding-right:10px; padding-top:10px;'>";
+				echo "<a href=\"./?edit=$name_table&key=" . $line[getPrimaryKeyField($name_table)] . "\"> Update </a>";
 				echo "</td>";
 				echo "</tr>";
 			}
 			echo "</tr>";			
-			echo "</table> </center>";	
+			echo "</table> </div> <div class='col-sm-2'> </div> </div> </center>";
+		?>
+		<center> 
+			<br> <a href='./?edit=<?php echo $name_table; ?>'> <button class="btn btn-primary"> Add record to <?php echo $name_table; ?> </button> </a>
+		</center>
+		<?php
 	}
 
 	function changeName($name) {
@@ -236,25 +344,43 @@
 		require('fields_info.php');
 		?>
 
-		<div style='font-size:25px';> <center> Add data to <strong> <?php echo changeName($name_table); ?> </strong> </center> </div> <br><br> <center> <form> <table>
+		<h2> <center> 
+		<?php if(isset($_REQUEST['key'])) { ?> Update data in <?php } else { ?> Add data in <?php } ?>
+		<strong> <?php echo changeName($name_table); ?> </strong> </center> </h2> <br><br> <center> <div class='row'> <div class='col-sm-3'> </div> <div class='col-sm-6'> <form>  <table class="table table-stripped">
 			
 		<?php
 
 		$connect = mysqli_connect($database_host,$database_user,$database_password,$database_name);
 		$fields = mysqli_query($connect, "describe $name_table;");
 		$afields = array();
+		$quotee = "";
+		if(getPrimaryKeyField($name_table)=='username') $quotee = "'";
+		$values = mysqli_query($connect, "SELECT * FROM $name_table WHERE " . getPrimaryKeyField($name_table) . "=" . $quotee . $_REQUEST['key'] . $quotee . ";");
+		$values = mysqli_fetch_assoc($values);
 		
 		while($field=mysqli_fetch_assoc($fields)) {
 			echo "<tr><td>";
 			echo changeName($field['Field']);
 			echo "</td><td>";
-			echo "<input " .  printInputFormAccordingToDataType($field['Type']) . " name=\"" . $field['Field'] . "\" />";
+			$value = '';
+
+			if(isset($_REQUEST['key'])) {
+				$value = $values[$field['Field']];
+			}
+
+			echo "<input class='col-sm-10' " .  printInputFormAccordingToDataType($field['Type']) . " value=\"$value\" name=\"" . $field['Field'] . "\" /> ";
 			echo "</td></tr>";	
 		}
 		
 		echo "</table>";
-		?> <input type='text' style='display:none;' name='edited' value='<?php echo $name_table; ?>'> </input>  <?php  
-		echo "<input type='submit' value='Add Data'>  </input> </form></center>";				
+		?> <input type='text' style='display:none;' name='edited' value='<?php echo $name_table; ?>'> </input>  
+		<?php
+			if(isset($_REQUEST['key'])) {
+				?>
+					<input type='text' style='display:none;' name='updated' value='true' />
+				<?php
+			}
+		echo "<br> <input type='submit' value='Add Data' class=\"btn btn-primary\">  </input> </form> </div> <div class='col-sm-3'> </div> </div> </center>";
 	}
 
 	function checkSomeoneSubmittingForm($list) {
@@ -280,27 +406,113 @@
 		$query_start = "INSERT INTO $name_table VALUES(";
 		$query_end = ");";
 		$query_mid = "";
+
+		$query_update_start = "UPDATE $name_table SET ";
+		$query_quotee = '';
+		if(getPrimaryKeyField($name_table) == 'username') $query_quotee = "'";
+		$query_update_end = " WHERE " . getPrimaryKeyField($name_table) . "=" . $query_quotee . $_REQUEST[getPrimaryKeyField($name_table)] . $query_quotee;
+		$query_update_mid = "";
 		
 		for($i=0;$i<count($afields);$i++) {
 
-		$query_mid = $query_mid . fieldsWithQuotes($afields[$i][1]) . $_REQUEST[$afields[$i][0]] . fieldsWithQuotes($afields[$i][1]);
+			$query_mid = $query_mid . fieldsWithQuotes($afields[$i][1]) . $_REQUEST[$afields[$i][0]] . fieldsWithQuotes($afields[$i][1]);
+			$query_update_mid = $query_update_mid . $afields[$i][0] . "=" . fieldsWithQuotes($afields[$i][1]) . $_REQUEST[$afields[$i][0]] . fieldsWithQuotes($afields[$i][1]);
 
-			if($i<count($afields)-1)
+			if($i<count($afields)-1) {
 				$query_mid = $query_mid . ",";							
+				$query_update_mid = $query_update_mid . ", ";
+			}
 		}
-
+		$query_update = $query_update_start . $query_update_mid . $query_update_end;
 		$query = $query_start . $query_mid . $query_end;
+	
+		if(isset($_REQUEST['updated'])) $query = $query_update;
 		$result = mysqli_query($connect,$query);
 		$error = mysqli_error($connect);
-		echo $query;
 		if($result) {
-			$toAlert = array(1,"Added a record to $name_table");
-			createAlertMessage($toAlert);
-			header("Location: ./?view=$name_table");			
+			if(isset($_REQUEST['updated'])) {
+				$toAlert = array(1,"Update a record in $name_table");
+				createAlertMessage($toAlert);
+				header("Location: ./?view=$name_table");
+			} else {
+				$toAlert = array(1,"Added a record to $name_table");
+				createAlertMessage($toAlert);
+				header("Location: ./?view=$name_table");
+			}
 		} else {
-			$toAlert = array(0,"Fill form properly.");
-			createAlertMessage($toAlert);
-			header("Location: ./?edit=$name_table");
+			if($_REQUEST['updated']) {
+				$toAlert = array(0,"Update with proper values.");
+				createAlertMessage($toAlert);
+				header("Location: ./?edit=$name_table&key=" . $_REQUEST[getPrimaryKeyField($name_table)] );
+			} else {
+				$toAlert = array(0,"Fill form properly.");
+				createAlertMessage($toAlert);
+				header("Location: ./?edit=$name_table");
+			}
 		}
 	}
+	
+	function displayAccordingToDoctor($username,$eid) {
+		?>
+			<div class='container'>
+				<div class='row'>
+					<div class='col-sm-4'>
+						<h3> Welcome, <strong> <?php echo $username; ?> </strong> </h3>
+					</div>
+					<div class='col-sm-4'>
+					</div>
+					<div class='col-sm-4'>
+					</div>
+				</div>
+				<br><br>
+				<div class='row'>
+					<div class='col-sm-6'>
+						<div class='row'> <center>
+						<h4> <strong> Patients </strong> under you. </h4>
+						</center>
+						</div>
+						<br><br>
+				
+						<?php
+							include 'database_config.php';
+							$connect = mysqli_connect($database_host,$database_user,$database_password,$database_name);
+							$query = "SELECT * from patient_info WHERE treated_by in (SELECT doctor_id from doctors_info WHERE e_id=$eid);";
+							
+							$result = mysqli_query($connect,$query);
+
+							?>
+								<table class="table table-striped table-bordered" >
+<tr>
+<th> Patient  Id  </th>
+<th> Gender  </th>
+<th> Name  </th>
+<th> Age  </th>
+<th> Phone  </th>
+<th> Patient History </th>
+</tr>
+
+								
+
+							<?php
+								
+							while($row=mysqli_fetch_assoc($result)) {
+							 ?>	<tr> <?php
+							
+							 	echo "<td>$row[p_id]</td>";
+							 	echo "<td>$row[gender]</td>";
+							 	echo "<td>$row[name]</td>";
+							 	echo "<td>$row[age]</td>";
+								echo "<td>$row[phone]</td>";
+						 		echo "<td>$row[patient_history]</td>";
+							 ?>	</tr>		  <?php
+							}
+							
+						?>
+					</table>
+				</div>
+				</div>
+			</div>
+		<?php
+	}
+
 ?>

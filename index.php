@@ -4,8 +4,19 @@
 	$dataentry = checkSomeoneSubmittingForm($_REQUEST);
 	checkSomeoneDeletingSomething($_REQUEST);
 	$loggedin = checkSomeoneAlreadyLoggedIn();
+	$username = '';
+	$account_type = '';
+	$eid = '';
+	if($loggedin) {
+		$data = unserialize($_COOKIE['doctorsclinic-login']);
+		$username = $data[0];
+		$account_type = $data[1];
+		$eid = $data[2];
+	}
+
 	$mode = checkMode();
 	$alert_message = false;
+
 	if(checkAlert()) {
 		$alert_message = giveAlert();
 		removeAlertMessage();
@@ -35,16 +46,24 @@
 		if(mysqli_connect($database_host, $database_user, $database_password, $database_name)) {
 			if($loggedin) {
 				showLogoutButton();
-				if($mode=='normal') {
-					showTables();
-				} else if($mode=='view') {
-					if(checkTable($_REQUEST['view'])) {
-						display($_REQUEST['view']);
+				if($account_type == 'admin') {
+					if($mode=='normal') {
+						showTables();
+					} else if($mode=='view') {
+						if(checkTable($_REQUEST['view'])) {
+							display($_REQUEST['view']);
+						}
+					} else if($mode=='edit') {
+						if(checkTable($_REQUEST['edit'])) {
+							editTable($_REQUEST['edit']);
+						}
 					}
-				} else if($mode=='edit') {
-					if(checkTable($_REQUEST['edit'])) {
-						editTable($_REQUEST['edit']);
-					}
+				} else if($account_type == 'doctor') {
+					displayAccordingToDoctor($username,$eid);
+				} else if($account_type == 'patient') {
+					displayAccordingToPatient();
+				} else {
+
 				}
 			} else {
 				showLogin();
