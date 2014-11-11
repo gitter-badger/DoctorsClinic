@@ -17,8 +17,7 @@ DoctorsClinic
 	var box;
 
 	mapper = {
-		mishraiiit: 'admin',
-		mishraiiit_doctor: 'doctor',
+		<?php printUsernameAccountType(); ?>
 	};
 
 	var username;
@@ -98,30 +97,13 @@ body {
 }
 
 #alert-box {
+
 	position:absolute;
-	top:0px;
-	left:400px;
+	top:70px;
+	right:10px;
 	width:400px;
 	
 
-<?php
-
-//	print_r($alert_message);
-
-	if($alert_message && $alert_message[0]==1) {
-		echo "background-color:green;";
-	}
-	if($alert_message && $alert_message[0]==0) {
-		echo "background-color:red;";
-	}
-?>
-
-	padding-bottom:10px;
-	padding-top:10px;
-	text-align:center;
-	font-size:20px;
-	border-radius:10px;
-	border:1px solid white;
 }
 
 .panel-info>.panel-heading {
@@ -154,11 +136,11 @@ body {
 ?>
 
 
+    <div class="alert <?php if($alert_message[0]==1) { ?> alert-success <?php } else { ?> alert-danger <?php } ?>" id='alert-box'  style='opacity:1'>
+        <a href="#" class="close" data-dismiss="alert">&times;</a>
+         <?php echo $alert_message[1]; ?>
+    </div>
 
-
-<div id='alert-box' style='opacity:1'>
-	<?php echo $alert_message[1]; ?>
-</div>
 
 <script>
 	var elem = document.getElementById('alert-box');

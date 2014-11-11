@@ -14,6 +14,11 @@
 		$eid = $data[2];
 	}
 
+	if($account_type=='doctor') {
+		checkPasswordChangeForDoctor($_REQUEST,$username);
+		checkNameChangeForDoctor($_REQUEST,$username,$eid);
+	}
+
 	$mode = checkMode();
 	$alert_message = false;
 
@@ -61,7 +66,7 @@
 				} else if($account_type == 'doctor') {
 					displayAccordingToDoctor($username,$eid);
 				} else if($account_type == 'patient') {
-					displayAccordingToPatient();
+					displayAccordingToPatient($eid);
 				} else {
 
 				}

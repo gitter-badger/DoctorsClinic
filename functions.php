@@ -1,4 +1,65 @@
 <?php
+	function printUsernameAccountType() {
+		include 'database_config.php';
+		$connect = mysqli_connect($database_host,$database_user,$database_password,$database_name);
+	
+		$query = "SELECT * from login_info";
+		$result = mysqli_query($connect,$query);
+	
+		while($row=mysqli_fetch_assoc($result)) {
+			echo $row[username] . ":" . "'" .  $row[account_type] . "'" . ",";
+		}		
+	}
+
+	function checkNameChangeForDoctor($R, $username,$eid) {
+		include 'database_config.php';
+		$connect = mysqli_connect($database_host,$database_user,$database_password,$database_name);
+		if($R[changeName]) {
+			if(strlen($R[changeName])>5) {
+				$query = "UPDATE employees_info SET name='$R[changeName]' WHERE e_id=$eid;";
+				$result = mysqli_query($connect,$query);
+				if($result) {
+					$toAlert = array(1,"Name Succesfully updated.");
+					createAlertMessage($toAlert);
+					refresh();
+
+				} else {
+					$toAlert = array(0,"Some error occured");
+					createAlertMessage($toAlert);
+					refresh();
+				}
+			} else {
+				$toAlert = array(0,"Name very small.");
+				createAlertMessage($toAlert);
+				refresh();
+			}
+		}
+	}
+
+	function checkPasswordChangeForDoctor($R,$username) {
+		include 'database_config.php';
+		$connect = mysqli_connect($database_host,$database_user,$database_password,$database_name);
+		if($R[changePassword]) {
+			if(strlen($R[changePassword])>4) {
+				$query = "UPDATE login_info SET password='$R[changePassword]' WHERE username='$username';";
+				$result = mysqli_query($connect,$query);
+				if($result) {
+					$toAlert = array(1,"Password successfully changed.");
+					createAlertMessage($toAlert);
+					refresh();
+
+				} else {
+					$toAlert = array(0,"Some error occured");
+					createAlertMessage($toAlert);
+					refresh();
+				}
+			} else {
+				$toAlert = array(0,"Password very small.");
+				createAlertMessage($toAlert);
+				refresh();
+			}
+		}
+	}
 
 	function printInputFormAccordingToDataType($input_type) {
 		if(strpos($input_type,"int")!== false) {
@@ -48,34 +109,7 @@
 	}
 
 	function showLogin() {
-		/*
-		?>
-			<form action='.' method='post'>
-			<br><br><br><br>
-			<center>
-			<table style='font-size:20px;'>
-				<tr>
-				 	<td>
-						<span style='font-size:24px;'> siteAdminUsername </span>
-					</td>
-					<td>
-						<input type='text' value='' name='admin_username' style='width:200px;' />
-					</td>
-				</tr>
-				<tr>
-				 	<td>
-						<span style='font-size:24px;'> siteAdminPassword </span>
-					</td>
-					<td>
-						<input type='password' value='' name='admin_password' style='width:200px;' />
-					</td>
-				</tr>
-			</table> <br>
-			<input type='submit' value="Log In" />
-			</center>
-			</form>
-		<?php
-		*/
+
 		?>
    <div class='container'>
         <div id="loginbox" style="margin-top:50px;" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">                    
@@ -143,15 +177,29 @@
 			<div class='col-sm-3'>  <img src='http://doctorsclinichouston.com/wp-content/themes/silent-blue/images/Photos/about-us.jpg'> </img> </div>
 			<div class='col-sm-5'>
 			
-			Doctor's clinic is a health care facitily that is primarily devoted to the care of 
-patients. It is privately operated and managed. It typically covers the primary health
-needs of population in nearby locations of Vaishali Nagar, Jaipur. In contrast, to 
-larger hospitals which offer specialised treatments to a mass of people, Doctor's 
-clinic serves the need for a smaller number of people and admits in patients for 
-over-night stay. The clinic is operated under supervision of two docors 
-namely, Dr. A.K. Saxena (MD) and Dr. Alok Mittal (MBBS).
+				Doctor's clinic is a health care facitily that is primarily devoted to the care of 
+				patients. It is privately operated and managed. It typically covers the primary health
+				needs of population in nearby locations of Vaishali Nagar, Jaipur. In contrast, to 
+				larger hospitals which offer specialised treatments to a mass of people, Doctor's 
+				clinic serves the need for a smaller number of people and admits in patients for 
+				over-night stay. The clinic is operated under supervision of two docors 
+				namely, Dr. A.K. Saxena (MD) and Dr. Alok Mittal (MBBS).
+				<br> <br> <br> 
+				<ul>
+					<li> The clinic is mainly ran by group of 6 doctors of which 2 are specialised in their fields and 4 are MBBS docotrs. </li>
+					<li> For medical helps there are 3 nurses, 2 lab-assistants for various physical testing labs (like blood test, ECG.. etc). </li>
+					<li> One shopkeeper at medical store is also there. </li>
+					<li> One sweeper is also required for cleaning of the clinic. </li>
+
+				</ul>
 			</div>
 			<div class='col-sm-3'>
+				<div class='row'>
+					<img src='http://fitfx.com/wp-content/uploads/Doctors-Clinic-Logo.png' width='100%'> </img>
+				</div>
+				<div class='row'> <center>
+					<img src='http://doctorsclinichouston.com/wp-content/themes/silent-blue/images/Photos/doctor-steth.jpg' width='60%'> </img> </center>
+				</div>
 			</div>
 		</div>
 		
@@ -457,7 +505,19 @@ namely, Dr. A.K. Saxena (MD) and Dr. Alok Mittal (MBBS).
 			<div class='container'>
 				<div class='row'>
 					<div class='col-sm-4'>
-						<h3> Welcome, <strong> <?php echo $username; ?> </strong> </h3>
+
+						<?php
+							include 'database_config.php';
+							$connect = mysqli_connect($database_host,$database_user,$database_password,$database_name);
+							$query = "select name from employees_info where e_id in (select e_id from login_info where username='$username');";
+							$result = mysqli_query($connect,$query);
+							$result = mysqli_fetch_assoc($result);
+							
+							$name = $result['name'];
+
+						?>
+
+						<h3> Welcome, <strong> Dr. <?php echo $name; ?> </strong> </h3>
 					</div>
 					<div class='col-sm-4'>
 					</div>
@@ -474,22 +534,21 @@ namely, Dr. A.K. Saxena (MD) and Dr. Alok Mittal (MBBS).
 						<br><br>
 				
 						<?php
-							include 'database_config.php';
-							$connect = mysqli_connect($database_host,$database_user,$database_password,$database_name);
-							$query = "SELECT * from patient_info WHERE treated_by in (SELECT doctor_id from doctors_info WHERE e_id=$eid);";
+							
+							$query = "SELECT * from patient_info WHERE treated_by in (SELECT doctor_id from	doctors_info WHERE e_id=$eid);";
 							
 							$result = mysqli_query($connect,$query);
 
 							?>
 								<table class="table table-striped table-bordered" >
-<tr>
-<th> Patient  Id  </th>
-<th> Gender  </th>
-<th> Name  </th>
-<th> Age  </th>
-<th> Phone  </th>
-<th> Patient History </th>
-</tr>
+								<tr>
+									<th> Patient  Id  </th>
+									<th> Gender  </th>
+									<th> Name  </th>
+									<th> Age  </th>
+									<th> Phone  </th>
+									<th> Patient History </th>
+								</tr>
 
 								
 
@@ -507,6 +566,109 @@ namely, Dr. A.K. Saxena (MD) and Dr. Alok Mittal (MBBS).
 							 ?>	</tr>		  <?php
 							}
 							
+						?>
+					</table>
+
+				</div>
+
+				<div class='col-sm-6'>
+					<center>
+					<div class='row'>
+							<h3> Quick Links </h3>
+						<br><br>
+					</div>
+					<div class='row'>
+						<table class="table">
+							
+							<tr>
+								<td style='float:right;'>
+									<form action='.'>
+									<input type='text' name='changePassword' />
+								</td>
+								<td>
+									<input type='submit' class="btn btn-primary" value="Change Password"> </btn>
+									</form>
+								</td>
+							</tr>
+							<tr>
+								<td style='float:right;'>
+									<form action='.'>		
+									<input type='text' name='changeName' />
+								</td>
+								<td>
+									<input type='submit' class="btn btn-primary" value="Change Name">  </btn>
+									</form>
+								</td>
+							</tr>
+
+						</table>
+					</div>
+					</center>
+				</div>
+
+				</div>
+
+			</div>
+		<?php
+	}
+
+	function displayAccordingToPatient($pid) {
+		?>
+			<div class='container'>
+				<div class='row'>
+				
+				<div class='col-sm-6'>
+						<h3> Welcome <strong> 
+						<?php
+
+							include 'database_config.php';
+							$connect = mysqli_connect($database_host,$database_user,$database_password,$database_name);
+
+							$result = mysqli_query($connect,"SELECT name from patient_info where p_id=$pid;");
+							$result = mysqli_fetch_assoc($result);
+							echo $result['name'];
+
+						?>
+						</strong> </h3> <br>
+						<h4> You are being treated by Dr. 
+						<?php 
+							$query = "select name from employees_info where e_id in (select e_id from doctors_info where doctor_id in (select treated_by from patient_info where p_id=$pid));";
+							$result = mysqli_query($connect, $query);
+							$result = mysqli_fetch_assoc($result);
+							echo "<strong>" . $result[name] . "</strong>";
+						?>
+						</h4>
+				</div>
+				<div class='col-sm-6'> <br><br><br><br>
+					<center> <h3> Medicines prescribed to you. </h3> </center> <br>
+					<table class="table table-striped table-bordered">
+						<tr>
+							<td> <h4> Medicine ID &nbsp; &nbsp; </h4> </td>
+							<td> <h4> Medicine name </h4> </td>
+							<td> <h4> Price </h4> </td>
+						</tr>
+						<?php
+							
+							$query = "SELECT medicines_set FROM medicines_prescribed WHERE p_id=$pid;";
+							$result = mysqli_query($connect, $query);
+							$result = mysqli_fetch_assoc($result);
+							$result = explode(',',$result['medicines_set']);
+							
+					
+
+							$result2 = mysqli_query($connect, "SELECT * FROM medicine_info");
+							$result3 = array();
+
+							while($line = mysqli_fetch_row($result2)) {
+								$result3[intval($line[0])] = array($line[1], $line[3]);
+							}
+
+								
+							foreach($result as $key=>$resu) {
+								echo "<tr> <td> <center> $resu </center> </td> ";
+								echo "<td>" . $result3[intval($resu)][0] . "</td>";
+								echo "<td>" . $result3[intval($resu)][1] . "</td> </tr>";
+							}
 						?>
 					</table>
 				</div>

@@ -29,5 +29,17 @@
 				'room_number' => 'Room Number',
 				'employees_info' => 'Employees Info',
 				'patient_occupancy' => 'Patients Occupancy',
+				'login_info' => 'Login Info',
+				'medicine_info' => 'Medicinal Information',
+				'medicine_id' => 'Medicine ID',
+				'medicine_name' => 'Name of Medicine',
+				'quantity' => 'Quantity of Medicine',
+				'price' => 'Price',
+				'quantity_in_pack' => 'Tablets in one pack',
+				'account_type' => 'Account type',
+				'username' => 'Username',
+				'password' => 'Password',
+				'medicines_set' => 'Medicines Prescribed',
+				'medicines_prescribed' => 'Medicines Prescribed',
 			);
 ?>
