@@ -632,12 +632,17 @@
 						</strong> </h3> <br>
 						<h4> You are being treated by Dr. 
 						<?php 
-							$query = "select name from employees_info where e_id in (select e_id from doctors_info where doctor_id in (select treated_by from patient_info where p_id=$pid));";
+							$query = "select * from employees_info where e_id in (select e_id from doctors_info where doctor_id in (select treated_by from patient_info where p_id=$pid));";
 							$result = mysqli_query($connect, $query);
 							$result = mysqli_fetch_assoc($result);
 							echo "<strong>" . $result[name] . "</strong>";
 						?>
 						</h4>
+						<h5> Phone number of your doctor is <em> <?php echo $result[phone]; ?> </em> </h5>
+						<br>
+						<h5>The doctor is available b/w <?php echo $result[duty_start_time]; ?> and <?php echo $result[duty_end_time]; ?> </h5>
+						<br>
+						<h5> <strong> Note: </strong> The doctor isn't available on <?php echo $result[off_day]; ?>. </h5>
 				</div>
 				<div class='col-sm-6'> <br><br><br><br>
 					<center> <h3> Medicines prescribed to you. </h3> </center> <br>
